@@ -255,8 +255,7 @@ void movement(Game *game)
 	    	p = &game->particle[i];
 	    	p->velocity.y -= GRAVITY;
 	    	p->s.center.x += p->velocity.x;
-	    	p->s.center.y += p->velocity.y;
-	
+	    	p->s.center.y += p->velocity.y;	
 	
 	//check for collision with shapes...
 	Shape *s;
@@ -266,18 +265,15 @@ void movement(Game *game)
 		p->s.center.x <= s->center.x + s->width ){
 	    p->s.center.y = s->center.y + s->height;
 	    p->velocity.y = -p->velocity.y * 0.8f;
-
-	
     	p->velocity.x += 0.05;	    
-
-
+	    }
 	}
-	}
+
 	//check for off-screen
 	if (p->s.center.y < 0.0) {
 		std::cout << "off screen" << std::endl;
 		game->n = 0;
-	}
+	}   
 }
 
 void render(Game *game)
