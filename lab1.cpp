@@ -1,4 +1,11 @@
+//Modified by: Analy Velazquez
+//date: January 26, 2017
+//purpose: Learning 
+//
 //cs3350 Spring 2017 Lab-1
+//author: Gordon 
+//date: 2014 to present
+//
 //This program demonstrates the use of OpenGL and XWindows
 //
 //Assignment is to modify this program.
@@ -38,8 +45,8 @@
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 600
 
-#define MAX_PARTICLES 1000
-#define GRAVITY 0.1
+#define MAX_PARTICLES 4000
+#define GRAVITY 0.15
 #define rnd() (float)rand() / (float)RAND_MAX
 
 //X Windows variables
@@ -68,7 +75,10 @@ struct Game {
 	Shape box;
 	Particle particle[MAX_PARTICLES];
 	int n;
-	Game() { n = 0; }
+	int bubbler;
+	int mouse[2];
+
+	Game() { n = 0; bubbler = 0; }
 };
 
 //Function prototypes
@@ -217,7 +227,15 @@ void check_mouse(XEvent *e, Game *game)
 	if (savex != e->xbutton.x || savey != e->xbutton.y) {
 		savex = e->xbutton.x;
 		savey = e->xbutton.y;
+	//	game->mouse[0] = savex;
+	//	game->mouse[1] = savey;
+
 		int y = WINDOW_HEIGHT - e->xbutton.y;
+		if(game-> bubbler == 0) {
+		    game->mouse[0] = savex;
+		    game->mouse[1] = y;
+		}
+
 		for (int  i = 0; i<5; i++)
 		{
 		    makeParticle(game, e->xbutton.x, y);
@@ -233,13 +251,15 @@ int check_keys(XEvent *e, Game *game)
 	//Was there input from the keyboard?
 	if (e->type == KeyPress) {
 		int key = XLookupKeysym(&e->xkey, 0);
+		
+		if (key == XK_b) {
+			game->bubbler ^= 1;
+		}
+		
 		if (key == XK_Escape) {
 			return 1;
 		}
 		//You may check other keys here.
-
-
-
 	}
 	return 0;
 }
@@ -251,29 +271,36 @@ void movement(Game *game)
 	if (game->n <= 0)
 		return;
 
+	if(game->bubbler != 0){
+	    //the bubbler is on!
+		makeParticle(game, game->mouse[0], game->mouse[1]);
+	
+	}
 	for(int i = 0; i <game->n; i++) {
 	    	p = &game->particle[i];
 	    	p->velocity.y -= GRAVITY;
 	    	p->s.center.x += p->velocity.x;
 	    	p->s.center.y += p->velocity.y;	
 	
-	//check for collision with shapes...
-	Shape *s;
-	s = &game->box;
-	if (p->s.center.y < s->center.y + s->height &&
-		p->s.center.x >= s->center.x - s->width &&
-		p->s.center.x <= s->center.x + s->width ){
-	    p->s.center.y = s->center.y + s->height;
-	    p->velocity.y = -p->velocity.y * 0.8f;
-    	p->velocity.x += 0.05;	    
-	    }
-	}
+		//check for collision with shapes...
+		Shape *s;
+		s = &game->box;
+		if (p->s.center.y < s->center.y + s->height &&
+			p->s.center.x >= s->center.x - s->width &&
+			p->s.center.x <= s->center.x + s->width ){
+	    	p->s.center.y = s->center.y + s->height;
+	    	p->velocity.y = -p->velocity.y * 0.8f;
+    		p->velocity.x += 0.05;	    
+		}
+		//check for off-screen
+		if (p->s.center.y < 0.0) {
+		 	std::cout << "off screen" << std::endl;
+			//game->n = 0;
+			game->particle[i] = game->particle[--game->n];
 
-	//check for off-screen
-	if (p->s.center.y < 0.0) {
-		std::cout << "off screen" << std::endl;
-		game->n = 0;
-	}   
+			//--game->n;
+		}   
+	}
 }
 
 void render(Game *game)
