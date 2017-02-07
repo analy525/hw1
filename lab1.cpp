@@ -41,10 +41,10 @@
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <GL/glx.h>
-/*extern "C"{ 
+extern "C"{ 
 #include "fonts.h"
 }
- */
+ 
 
 
 #define WINDOW_WIDTH  800
@@ -117,7 +117,7 @@ int main(void)
 		game.box[i].center.y = 500 - i*60;
 	}
 
-	game.circle.radius = 250;
+	game.circle.radius = 200;
 	game.circle.center.x = 300 + 5*65;
 	game.circle.center.y = 300 - 5*60;
 
@@ -195,8 +195,11 @@ void init_opengl(void)
 	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
 	//Set 2D mode (no perspective)
 	glOrtho(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT, -1, 1);
+	glEnable(GL_TEXTURE_2D);
 	//Set the screen background color
+	
 	glClearColor(0.1, 0.1, 0.1, 1.0);
+	initialize_fonts();
 }
 
 void makeParticle(Game *game, int x, int y)
@@ -217,7 +220,7 @@ void check_mouse(XEvent *e, Game *game)
 {
 	static int savex = 0;
 	static int savey = 0;
-	//static int n = 0;
+//	static int n = 0;
 
 	if (e->type == ButtonRelease) {
 		return;
@@ -298,16 +301,20 @@ void movement(Game *game)
 
 		//check for collision with shapes...
 		Shape *s;
-		for(int i=0; i<5; i++){
+		for(int i=0; i < 5; i++){
 			s = &game->box[i];
+		
 			if (p->s.center.y < s->center.y + s->height &&
+					p->s.center.y > s->center.y - s->height &&
 					p->s.center.x >= s->center.x - s->width &&
 					p->s.center.x <= s->center.x + s->width ){
 				p->s.center.y = s->center.y + s->height;
-				p->velocity.y = -p->velocity.y * 0.8f;
+				//p->velocity.y = -p->velocity.y * 0.8f;
+				p->velocity.y = -p->velocity.y * 0.1;
 				p->velocity.x += 0.05;	    
-			}
 
+			}
+	
 			float d0, d1, dist;
 			d0 = p->s.center.x - game->circle.center.x;
 			d1 = p->s.center.y - game->circle.center.y;
@@ -337,7 +344,7 @@ void render(Game *game)
 {
 	float w, h;
 	glClear(GL_COLOR_BUFFER_BIT);
-	//Rect r;
+//	Rect r;
 	//Draw shapes...
 
 	//draw box
@@ -363,7 +370,10 @@ void render(Game *game)
 	static Vec vert[n];
 	static int firstTime=1;
 	float ang = 0.0;
+
+//	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3ub(9,60,235);
+	glBegin(GL_LINE_LOOP);
 	if(firstTime) {
 		float inc = (Pi *1.5)/(float)n;
 		for(int i =0; i <n; i++){
@@ -375,7 +385,7 @@ void render(Game *game)
 		firstTime=0;
 	}
 
-	glBegin(GL_LINE_LOOP);
+	glColor3ub(9,60,235);
 	for(int i=0; i < n; i++)
 		glVertex2i(game->circle.center.x + vert[i].x, game->circle.center.y + vert[i].y);
 	glEnd();
@@ -402,14 +412,14 @@ void render(Game *game)
 }	
 
 
-//	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D, 0);
+	Rect r1;
+	r1.bot = 490;
+	r1.left = 100;
+	r1.center =1;
+	ggprint13(&r1, 16, 450, "Requirements");
 
-/*	r.bot = 490;
-	r.left = 100;
-	r.center =1;
-	ggprint16(&r, 16, 0x00ffff0, "Requirements");
-
- */
+ 
 
 
 
